@@ -40,21 +40,21 @@ That connection scheme will protect from passive (eavesdrop) MITM attacks and MI
     # dnf update
     # dnf install python3-pynacl
     $ pip install pycryptodome
-    $ git clone https://github.com/kolbanidze/se2ec
-    $ cd se2ec
+    $ git clone https://github.com/kolbanidze/chatee
+    $ cd chatee
   ## Termux
   
 
     $ pkg update
     $ pkg install clang python libffi openssl libsodium
     $ SODIUM_INSTALL=system pip install pynacl
-    $ git clone https://github.com/kolbanidze/se2ec
-    $ cd se2ec
+    $ git clone https://github.com/kolbanidze/chatee
+    $ cd chatee
 Thanks to that [guy](https://github.com/pyca/pynacl/issues/483#issuecomment-608049721)
 ## Other
 
-    git clone https://github.com/kolbanidze/se2ec
-    cd se2ec
+    git clone https://github.com/kolbanidze/chatee
+    cd chatee
     pip install -r requirements.txt
 # App usage
 

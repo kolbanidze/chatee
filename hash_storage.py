@@ -64,7 +64,7 @@ class HashStorage:
                 print("Someone may be doing a MITM attack!")
                 print("Or server has logged with different account (with different keys of course)")
                 print(f"Saved public key hash in db: {pk_hash_in_db}\nCurrent public key hash: {self.pk_hash}")
-                print("If you want to reset that key run: python hash_storage.py")
+                print("If you want to reset that key start Hash Storage and delete it.")
                 self.sock.send(b"PK_DENIED")
                 os._exit(1)
         else:
