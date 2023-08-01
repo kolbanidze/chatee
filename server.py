@@ -5,6 +5,8 @@ from Crypto.Cipher import AES
 import os
 from sys import stdout
 from settings import MAX_MESSAGE_LENGTH
+from base64 import b64encode
+from hash_storage import HashStorage
 
 
 class Server:
@@ -72,6 +74,19 @@ class Server:
         while True:
             print("\n> ", end="")
             message = bytes(input(), 'utf-8')
+
+            if message == b"/connectioninfo":
+                print(f"IP: {self.host}, Port: {self.port}")
+                print(f"Session key (base64): {b64encode(self.session_key).decode('utf-8')}")
+                print(f"My public key (sha256): {HashStorage.get_hash(bytes(self.public_key))}")
+                continue
+
+            # Shows help
+            if message == b"/help":
+                print("/help - show help")
+                print("/leave - you and your interlocutor will leave chat.")
+                print("/connectioninfo - shows connection info (ip, port, public_key, session_key)")
+                continue
 
             # Encrypting a message
             cipher = AES.new(self.session_key, AES.MODE_EAX)

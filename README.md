@@ -78,8 +78,12 @@ You can: show saved entries, delete entry and delete all entries
 #### settings.py
 You can edit: Hash DB Name, Max Message Length, Salt Size, Hash DB Table Name, Account Storage DB Name, Account Storage DB Table, Argon2id Time Cost, Argon2id Memory Cost, Argon2id Parallelism  
 
-## Leaving chat
-To leave chat just send /leave command. You and your interlocutor will leave chat.
+## Commands
+/help - show help
+
+/leave - you and your interlocutor will leave chat.
+
+/connectioninfo - shows connection info (ip, port, public_key, session_key)
 
 ## Usage
     python3 main.py

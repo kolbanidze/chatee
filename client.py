@@ -1,3 +1,4 @@
+from base64 import b64encode
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 from nacl.public import PublicKey, SealedBox
@@ -76,10 +77,23 @@ class Client:
                     print("An error occurred while decryption of message.")
 
     def send_message(self, sock: socket) -> None:
-        """Sending and encrypting messages. Handles /leave command"""
+        """Sending and encrypting messages. Handles / commands"""
         while True:
             print("\n> ", end="")
             message = bytes(input(), 'utf-8')
+
+            if message == b"/connectioninfo":
+                print(f"IP: {self.host}, Port: {self.port}")
+                print(f"Session key (base64): {b64encode(self.session_key).decode('utf-8')}")
+                print(f"Server public key (sha256): {HashStorage.get_hash(bytes(self.server_pk))}")
+                continue
+
+            # Shows help
+            if message == b"/help":
+                print("/help - show help")
+                print("/leave - you and your interlocutor will leave chat.")
+                print("/connectioninfo - shows connection info (ip, port, public_key, session_key)")
+                continue
 
             # Encrypting message
             cipher = AES.new(self.session_key, AES.MODE_EAX)

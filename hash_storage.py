@@ -12,10 +12,15 @@ class HashStorage:
         self.ip_address = ip_address
         self.port_number = port_number
         self.public_key = public_key
-        self.pk_hash = sha256(self.public_key).hexdigest()
+        self.pk_hash = self.get_hash(self.public_key)
         self.sock = sock
         self.create_db()
         self.add_and_verify()
+
+    @staticmethod
+    def get_hash(public_key: bytes) -> str:
+        """Just returns hex sha256 hash of gives bytes"""
+        return sha256(public_key).hexdigest()
 
     def create_db(self):
         """Creates db"""
