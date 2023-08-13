@@ -42,6 +42,7 @@ That connection scheme will protect from passive (eavesdrop) MITM attacks and MI
     $ pip install pycryptodome
     $ git clone https://github.com/kolbanidze/chatee
     $ cd chatee
+    $ pip install -r requirements.txt
   ## Termux
   
 
@@ -50,6 +51,7 @@ That connection scheme will protect from passive (eavesdrop) MITM attacks and MI
     $ SODIUM_INSTALL=system pip install pynacl
     $ git clone https://github.com/kolbanidze/chatee
     $ cd chatee
+    $ pip install -r requirements.txt
 Thanks to that [guy](https://github.com/pyca/pynacl/issues/483#issuecomment-608049721)
 ## Other
 
