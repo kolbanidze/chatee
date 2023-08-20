@@ -131,8 +131,11 @@ class HashStorageEditor:
     def get_saved_entries(self) -> list:
         """Displays all saved ip, port and hashes"""
 
-        self.c.execute(f"SELECT * FROM {HASH_DB_TABLE_NAME}")
-        return self.c.fetchall()
+        if not self._check_if_db_empty():
+            self.c.execute(f"SELECT * FROM {HASH_DB_TABLE_NAME}")
+            return self.c.fetchall()
+        else:
+            return []
 
     def remove_entry(self, ip_address: str, port_number: str) -> None:
         """Checking entry existence, deleting it and verifying deleting"""
