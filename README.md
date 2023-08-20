@@ -86,7 +86,10 @@ You can edit: Hash DB Name, Max Message Length, Salt Size, Hash DB Table Name, A
 /connectioninfo - shows connection info (ip, port, public_key, session_key)
 
 ## Usage
-    python3 main.py
-   or
-   
-    python main.py
+```
+python3 main.py
+```
+or
+```
+python main.py
+```
