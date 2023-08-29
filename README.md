@@ -1,5 +1,6 @@
-
 # Chatee: Simple E2E Chat
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Known Vulnerabilities](https://snyk.io/test/github/kolbanidze/chatee/badge.svg)](https://snyk.io/test/github/kolbanidze/chatee)
 
 Cross-platform simple client-server encrypted chat. It is a simple learning project. I'm **not** security researcher, so if you want really secure E2E chat use any professionally written software (not Chatee).
 
