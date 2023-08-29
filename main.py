@@ -1,4 +1,4 @@
-from settings import SALT_SIZE, ACCOUNT_STORAGE_DB_NAME, ACCOUNT_STORAGE_DB_TABLE,\
+from settings import SALT_SIZE, ACCOUNT_STORAGE_DB_NAME,\
                      ARGON2ID_PARALLELISM, ARGON2ID_MEMORY_COST, ARGON2ID_TIME_COST
 from nacl.public import PrivateKey
 from secrets import token_bytes
@@ -24,8 +24,8 @@ def login(username: str) -> None:
     # Getting BLOB entries from db
     db = sql_connect(ACCOUNT_STORAGE_DB_NAME)
     c = db.cursor()
-    c.execute(f"SELECT * FROM {ACCOUNT_STORAGE_DB_TABLE} "
-              f"WHERE username='{username}'")
+    c.execute(f"SELECT * FROM accounts "
+              f"WHERE username=?", (username,))
     output = c.fetchall()[0]
     encrypted_private_key = output[1]
     password_salt = output[2]
@@ -96,12 +96,9 @@ def create_account(username: str) -> None:
     encrypted_private_key, tag = cipher.encrypt_and_digest(bytes(private_key))
 
     # Saving into db
-    c.execute(f"INSERT INTO {ACCOUNT_STORAGE_DB_TABLE} "
-              f"VALUES ('{username}', ?, ?, ?, ?)",
-              [memoryview(encrypted_private_key),
-               memoryview(salt),
-               memoryview(nonce),
-               memoryview(tag)])
+    c.execute("INSERT INTO accounts "
+              "VALUES (,, ?, ?, ?, ?)",
+              (username, encrypted_private_key, salt, nonce, tag))
     db.commit()
     db.close()
 
@@ -116,7 +113,7 @@ def check_account_existence() -> None:
     c = db.cursor()
 
     def _create_db() -> None:
-        c.execute(f"""CREATE TABLE IF NOT EXISTS {ACCOUNT_STORAGE_DB_TABLE} (
+        c.execute(f"""CREATE TABLE IF NOT EXISTS accounts (
                         username text,
                         encrypted_private_key BLOB,
                         password_salt BLOB,
@@ -125,7 +122,7 @@ def check_account_existence() -> None:
         db.commit()
 
     def _check_if_username_exists(username: str) -> bool:
-        c.execute(f"SELECT * FROM {ACCOUNT_STORAGE_DB_TABLE} WHERE username='{username}'")
+        c.execute(f"SELECT * FROM accounts WHERE username=?", (username, ))
         output = c.fetchall()
 
         if len(output) != 0:

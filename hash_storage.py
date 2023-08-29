@@ -1,4 +1,4 @@
-from settings import HASH_DB_NAME, HASH_DB_TABLE_NAME
+from settings import HASH_DB_NAME
 import sqlite3
 from hashlib import sha256
 import os
@@ -26,7 +26,7 @@ class HashStorage:
         """Creates db"""
         db = sqlite3.connect(self.hash_db)
         c = db.cursor()
-        c.execute(f"""CREATE TABLE IF NOT EXISTS {HASH_DB_TABLE_NAME} (
+        c.execute(f"""CREATE TABLE IF NOT EXISTS hash_storage (
                             ip text,
                             port text,
                             pk_hash text)""")
@@ -39,8 +39,8 @@ class HashStorage:
         If user hasn't connected before it will add hash"""
 
         def _check_if_exist():
-            c.execute(f"SELECT * FROM {HASH_DB_TABLE_NAME} "
-                      f"WHERE ip='{self.ip_address}' AND port='{self.port_number}'")
+            c.execute(f"SELECT * FROM hash_storage "
+                      f"WHERE ip=? AND port=?", (self.ip_address, self.port_number))
             output = c.fetchall()
             if len(output) == 0:
                 # Entry don't exist
@@ -50,8 +50,9 @@ class HashStorage:
                 return True, output
 
         def _add_to_db():
-            c.execute(f"INSERT INTO {HASH_DB_TABLE_NAME} "
-                      f"VALUES ('{self.ip_address}', '{self.port_number}', '{self.pk_hash}')")
+            c.execute(f"INSERT INTO hash_storage "
+                      f"VALUES (?, ?, ?)",
+                      (self.ip_address, self.port_number, self.pk_hash))
             db.commit()
 
         db = sqlite3.connect(self.hash_db)
@@ -101,7 +102,7 @@ class HashStorageEditor:
             # Database is empty
             return True
 
-        self.c.execute(f"SELECT * FROM {HASH_DB_TABLE_NAME}")
+        self.c.execute(f"SELECT * FROM hash_storage")
         output = self.c.fetchall()
 
         if len(output) == 0:
@@ -117,8 +118,8 @@ class HashStorageEditor:
         If account don't exist return False"""
 
         # Checking existence of entry with same ip and port
-        self.c.execute(f"SELECT * FROM {HASH_DB_TABLE_NAME} "
-                       f"WHERE ip='{ip_address}' AND port='{port_number}'")
+        self.c.execute(f"SELECT * FROM hash_storage "
+                       f"WHERE ip=? AND port=?", (ip_address, port_number))
         output = self.c.fetchall()
 
         if len(output) != 0:
@@ -132,7 +133,7 @@ class HashStorageEditor:
         """Displays all saved ip, port and hashes"""
 
         if not self._check_if_db_empty():
-            self.c.execute(f"SELECT * FROM {HASH_DB_TABLE_NAME}")
+            self.c.execute(f"SELECT * FROM hash_storage")
             return self.c.fetchall()
         else:
             return []
@@ -146,8 +147,8 @@ class HashStorageEditor:
             self.menu()
 
         # Deleting entry
-        self.c.execute(f"DELETE FROM {HASH_DB_TABLE_NAME} "
-                       f"WHERE ip='{ip_address}' AND port='{port_number}'")
+        self.c.execute(f"DELETE FROM hash_storage "
+                       f"WHERE ip=? AND port=?", (ip_address, port_number))
         self.db.commit()
 
         # Checking that entry was successfully deleted
@@ -162,7 +163,7 @@ class HashStorageEditor:
         # Check that db isn't empty
         if not self._check_if_db_empty():
             print("Deleting all entries")
-            self.c.execute(f"DELETE FROM {HASH_DB_TABLE_NAME}")
+            self.c.execute(f"DELETE FROM hash_storage")
             self.db.commit()
         else:
             print("DB is already empty.")

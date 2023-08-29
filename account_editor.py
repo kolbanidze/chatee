@@ -1,5 +1,5 @@
 from sqlite3 import connect as sql_connect
-from settings import ACCOUNT_STORAGE_DB_NAME, ACCOUNT_STORAGE_DB_TABLE, SALT_SIZE,\
+from settings import ACCOUNT_STORAGE_DB_NAME, SALT_SIZE,\
                      ARGON2ID_PARALLELISM, ARGON2ID_MEMORY_COST, ARGON2ID_TIME_COST
 from getpass import getpass
 from gc import collect as collect_garbage
@@ -7,6 +7,7 @@ from Crypto.Cipher import AES
 from secrets import token_bytes
 from argon2.low_level import hash_secret_raw
 from argon2 import Type
+
 
 class AccountEditor:
     def __init__(self):
@@ -27,7 +28,7 @@ class AccountEditor:
             return True
 
         # Check if there are entries
-        self.c.execute(f"SELECT * FROM {ACCOUNT_STORAGE_DB_TABLE}")
+        self.c.execute("SELECT * FROM accounts")
         output = self.c.fetchall()
         if len(output) == 0:
             # Database is empty
@@ -45,7 +46,7 @@ class AccountEditor:
 
         if self._check_if_db_empty():
             return [['Database'], ['is'], ['empty'], ['=D']]
-        self.c.execute(f"SELECT username FROM {ACCOUNT_STORAGE_DB_TABLE}")
+        self.c.execute("SELECT username FROM accounts")
         output = self.c.fetchall()
 
         return output
@@ -65,8 +66,7 @@ class AccountEditor:
         Then returns decrypted data as dictionary."""
 
         # Getting user info from db
-        self.c.execute(f"SELECT * FROM {ACCOUNT_STORAGE_DB_TABLE} "
-                       f"WHERE username='{username}'")
+        self.c.execute("SELECT * FROM accounts WHERE username=?", (username,))
         output = self.c.fetchall()[0]
         encrypted_private_key = output[1]
         password_salt = output[2]
@@ -164,27 +164,32 @@ class AccountEditor:
         new_encrypted_private_key, new_tag = new_cipher.encrypt_and_digest(current_private_key)
 
         # Saving into db
-        self.c.execute(f"UPDATE {ACCOUNT_STORAGE_DB_TABLE} SET "
-                       f"encrypted_private_key=?,"
-                       f"password_salt=?,"
-                       f"nonce=?,"
-                       f"tag=? "
-                       f"WHERE username='{username}'", [memoryview(new_encrypted_private_key),
-                                                        memoryview(new_password_salt),
-                                                        memoryview(new_nonce),
-                                                        memoryview(new_tag)])
+        # self.c.execute(f"UPDATE {ACCOUNT_STORAGE_DB_TABLE} SET "
+        #                f"encrypted_private_key=?,"
+        #                f"password_salt=?,"
+        #                f"nonce=?,"
+        #                f"tag=? "
+        #                f"WHERE username='{username}'", [memoryview(new_encrypted_private_key),
+        #                                                 memoryview(new_password_salt),
+        #                                                 memoryview(new_nonce),
+        #                                                 memoryview(new_tag)])
+        self.c.execute("UPDATE accounts SET "
+                       "encrypted_private_key=?,"
+                       "password_salt=?,"
+                       "nonce=?,"
+                       "tag=? "
+                       "WHERE username=?", (new_encrypted_private_key,
+                                            new_password_salt,
+                                            new_nonce,
+                                            new_tag,
+                                            username))
         self.db.commit()
 
         # Checking entry
-        self.c.execute(f"SELECT * FROM {ACCOUNT_STORAGE_DB_TABLE} "
-                       f"WHERE username='{username}' AND "
-                       f"encrypted_private_key=? AND "
-                       f"password_salt=? AND "
-                       f"nonce=? AND "
-                       f"tag=?", [memoryview(new_encrypted_private_key),
-                                  memoryview(new_password_salt),
-                                  memoryview(new_nonce),
-                                  memoryview(new_tag)])
+        self.c.execute("SELECT * FROM accounts WHERE username=? AND "
+                       "encrypted_private_key=? AND password_salt=? AND "
+                       "nonce=? AND tag=?", (username, new_encrypted_private_key,
+                                             new_password_salt, new_nonce, new_tag))
         output = self.c.fetchall()
 
         if len(output) != 0:
@@ -254,20 +259,17 @@ class AccountEditor:
         new_username = input("New username: ")
 
         # Changing username
-        self.c.execute(f"UPDATE {ACCOUNT_STORAGE_DB_TABLE} SET "
-                       f"username='{new_username}' "
-                       f"WHERE username='{username}'")
+        self.c.execute("UPDATE accounts SET "
+                       "username=? WHERE username=?", (new_username, username))
         self.db.commit()
 
         # Checking
-        self.c.execute(f"SELECT * FROM {ACCOUNT_STORAGE_DB_TABLE} "
-                       f"WHERE username='{username}'")
+        self.c.execute("SELECT * FROM accounts WHERE username=?", (username,))
         if len(self.c.fetchall()) != 0:
             print("Hmm. Something went wrong, your old username is still in db.")
             self.menu()
 
-        self.c.execute(f"SELECT * FROM {ACCOUNT_STORAGE_DB_TABLE} "
-                       f"WHERE username='{new_username}'")
+        self.c.execute("SELECT * FROM accounts WHERE username=?", (new_username,))
         if len(self.c.fetchall()) != 0:
             print("Username changed successfully!")
         else:
@@ -287,13 +289,13 @@ class AccountEditor:
         if check == "n":
             self.menu()
 
-        self.c.execute(f"DELETE FROM {ACCOUNT_STORAGE_DB_TABLE} "
-                       f"WHERE username='{username}'")
+        self.c.execute(f"DELETE FROM accounts "
+                       f"WHERE username=?", (username,))
         self.db.commit()
 
         # Checking deleting
-        self.c.execute(f"SELECT * FROM {ACCOUNT_STORAGE_DB_TABLE} "
-                       f"WHERE username='{username}'")
+        self.c.execute(f"SELECT * FROM accounts "
+                       f"WHERE username=?", (username,))
         if len(self.c.fetchall()) != 0:
             print("Oops. Something went wrong while deleting your account.")
         else:
@@ -308,7 +310,7 @@ class AccountEditor:
             self.menu()
         else:
             print("Deleting all entries")
-            self.c.execute(f"DELETE FROM {ACCOUNT_STORAGE_DB_TABLE}")
+            self.c.execute(f"DELETE FROM accounts")
             self.db.commit()
 
         # Checking deletion
